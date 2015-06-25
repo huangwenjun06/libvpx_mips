@@ -23,10 +23,12 @@ extern "C" {
 # include "vp8/common/variance.h"
 # include "./vp8_rtcd.h"
 #endif
+/*
 #if CONFIG_VP9_ENCODER
 # include "vp9/encoder/vp9_variance.h"
 # include "./vp9_rtcd.h"
 #endif
+*/
 }
 #include "test/acm_random.h"
 
@@ -255,7 +257,7 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::RefTest() {
     }
   }
 }
-
+/*
 template<>
 void SubpelVarianceTest<vp9_subp_avg_variance_fn_t>::RefTest() {
   for (int x = 0; x < 16; ++x) {
@@ -279,7 +281,7 @@ void SubpelVarianceTest<vp9_subp_avg_variance_fn_t>::RefTest() {
     }
   }
 }
-
+*/
 // -----------------------------------------------------------------------------
 // VP8 test cases.
 
@@ -340,7 +342,7 @@ INSTANTIATE_TEST_CASE_P(
 
 // -----------------------------------------------------------------------------
 // VP9 test cases.
-
+/*
 namespace vp9 {
 
 #if CONFIG_VP9_ENCODER
@@ -690,5 +692,5 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // CONFIG_VP9_ENCODER
 
 }  // namespace vp9
-
+*/
 }  // namespace
