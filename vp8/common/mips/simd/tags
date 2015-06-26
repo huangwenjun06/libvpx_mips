@@ -1,0 +1,54 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+CROP_WIDTH	filter_simd.c	17;"	d	file:
+CROP_WIDTH	idctllm_simd.c	14;"	d	file:
+VP8_FILTER_SHIFT	filter_simd.c	21;"	d	file:
+VP8_FILTER_WEIGHT	filter_simd.c	20;"	d	file:
+cospi8sqrt2minus1	idctllm_simd.c	/^static const int cospi8sqrt2minus1 = 20091;$/;"	v	file:
+dsputil_static_init	filter_simd.c	/^void dsputil_static_init(void)$/;"	f
+ff_cropTbl	filter_simd.c	/^unsigned char ff_cropTbl[256 + 2 * CROP_WIDTH];$/;"	v
+filter_block2d	filter_simd.c	/^static void filter_block2d$/;"	f	file:
+filter_block2d_first_pass	filter_simd.c	/^static void filter_block2d_first_pass$/;"	f	file:
+filter_block2d_second_pass	filter_simd.c	/^static void filter_block2d_second_pass$/;"	f	file:
+prefetch_load	filter_simd.c	/^inline void prefetch_load(unsigned char *src)$/;"	f
+prefetch_load_int	reconinter_simd.c	/^inline void prefetch_load_int(unsigned char *src)$/;"	f
+prefetch_load_short	idctllm_simd.c	/^inline void prefetch_load_short(short *src)$/;"	f
+prefetch_store	filter_simd.c	/^inline void prefetch_store(unsigned char *dst)$/;"	f
+sinpi8sqrt2	idctllm_simd.c	/^static const int sinpi8sqrt2      = 35468;$/;"	v	file:
+sub_pel_filters_int	filter_simd.c	/^static const int sub_pel_filters_int[8][3] =$/;"	v	file:
+sub_pel_filters_int_tap_4	filter_simd.c	/^static const int sub_pel_filters_int_tap_4[8][2] =$/;"	v	file:
+sub_pel_filters_inv	filter_simd.c	/^static const int sub_pel_filters_inv[8][3] =$/;"	v	file:
+sub_pel_filters_inv_tap_4	filter_simd.c	/^static const int sub_pel_filters_inv_tap_4[8][2] =$/;"	v	file:
+sub_pel_filterss	filter_simd.c	/^static const unsigned short sub_pel_filterss[8][3] =$/;"	v	file:
+uc	loopfilter_filters_simd.c	/^typedef unsigned char uc;$/;"	t	file:
+vp8_copy_mem16x16_simd	reconinter_simd.c	/^__inline void vp8_copy_mem16x16_simd($/;"	f
+vp8_copy_mem8x4_simd	reconinter_simd.c	/^__inline void vp8_copy_mem8x4_simd($/;"	f
+vp8_copy_mem8x8_simd	reconinter_simd.c	/^__inline void vp8_copy_mem8x8_simd($/;"	f
+vp8_dc_only_idct_add_simd	idctllm_simd.c	/^void vp8_dc_only_idct_add_simd(short input_dc, unsigned char *pred_ptr, int pred_stride, unsigned char *dst_ptr, int dst_stride)$/;"	f
+vp8_dequant_idct_add_simd	dequantize_simd.c	/^void vp8_dequant_idct_add_simd(short *input, short *dq,$/;"	f
+vp8_dequant_idct_add_uv_block_simd	idct_blk_simd.c	/^void vp8_dequant_idct_add_uv_block_simd$/;"	f
+vp8_dequant_idct_add_y_block_simd	idct_blk_simd.c	/^void vp8_dequant_idct_add_y_block_simd$/;"	f
+vp8_filter	loopfilter_filters_simd.c	/^static void vp8_filter(signed char mask, uc hev, uc *op1,$/;"	f	file:
+vp8_filter_mask	loopfilter_filters_simd.c	/^static signed char vp8_filter_mask(uc limit, uc blimit,$/;"	f	file:
+vp8_hevmask	loopfilter_filters_simd.c	/^static signed char vp8_hevmask(uc thresh, uc p1, uc p0, uc q0, uc q1)$/;"	f	file:
+vp8_loop_filter_bh_simd	loopfilter_filters_simd.c	/^void vp8_loop_filter_bh_simd(unsigned char *y_ptr, unsigned char *u_ptr, unsigned char *v_ptr,$/;"	f
+vp8_loop_filter_bv_simd	loopfilter_filters_simd.c	/^void vp8_loop_filter_bv_simd(unsigned char *y_ptr, unsigned char *u_ptr, unsigned char *v_ptr,$/;"	f
+vp8_loop_filter_horizontal_edge_simd	loopfilter_filters_simd.c	/^void vp8_loop_filter_horizontal_edge_simd$/;"	f
+vp8_loop_filter_mbh_simd	loopfilter_filters_simd.c	/^void vp8_loop_filter_mbh_simd(unsigned char *y_ptr, unsigned char *u_ptr, unsigned char *v_ptr,$/;"	f
+vp8_loop_filter_mbv_simd	loopfilter_filters_simd.c	/^void vp8_loop_filter_mbv_simd(unsigned char *y_ptr, unsigned char *u_ptr, unsigned char *v_ptr,$/;"	f
+vp8_loop_filter_vertical_edge_simd	loopfilter_filters_simd.c	/^void vp8_loop_filter_vertical_edge_simd$/;"	f
+vp8_mbfilter_simd	loopfilter_filters_simd.c	/^static __inline void vp8_mbfilter_simd$/;"	f	file:
+vp8_mbloop_filter_horizontal_edge_simd	loopfilter_filters_simd.c	/^void vp8_mbloop_filter_horizontal_edge_simd$/;"	f
+vp8_mbloop_filter_vertical_edge_simd	loopfilter_filters_simd.c	/^void vp8_mbloop_filter_vertical_edge_simd$/;"	f
+vp8_short_idct4x4llm_simd	idctllm_simd.c	/^void vp8_short_idct4x4llm_simd(short *input, unsigned char *pred_ptr,$/;"	f
+vp8_short_inv_walsh4x4_1_simd	idctllm_simd.c	/^void vp8_short_inv_walsh4x4_1_simd(short *input, short *mb_dqcoeff)$/;"	f
+vp8_short_inv_walsh4x4_simd	idctllm_simd.c	/^void vp8_short_inv_walsh4x4_simd(short *input, short *mb_dqcoeff)$/;"	f
+vp8_signed_char_clamp	loopfilter_filters_simd.c	/^static signed char vp8_signed_char_clamp(int t)$/;"	f	file:
+vp8_sixtap_predict16x16_simd	filter_simd.c	/^void vp8_sixtap_predict16x16_simd$/;"	f
+vp8_sixtap_predict4x4_simd	filter_simd.c	/^void vp8_sixtap_predict4x4_simd$/;"	f
+vp8_sixtap_predict8x4_simd	filter_simd.c	/^void vp8_sixtap_predict8x4_simd$/;"	f
+vp8_sixtap_predict8x8_simd	filter_simd.c	/^void vp8_sixtap_predict8x8_simd$/;"	f

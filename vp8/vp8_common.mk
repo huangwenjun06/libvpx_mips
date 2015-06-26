@@ -126,6 +126,29 @@ VP8_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/reconinter_dspr2.c
 VP8_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/idct_blk_dspr2.c
 VP8_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/dequantize_dspr2.c
 
+#hwj date:2015-06-26
+# common (c)
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/dequantize_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/filter_mips.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/idct_blk_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/idctllm_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/iwalsh_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/loopfilter_block_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/loopfilter_filters_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/loopfilter_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/mfqe_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/postproc_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/reconinter_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/recon_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/sad_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/subpixel_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/variance_impl_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/variance_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/vp8_asm_stubs.c
+
+
+
+
 # common (c)
 VP8_COMMON_SRCS-$(ARCH_ARM)  += common/arm/filter_arm.c
 VP8_COMMON_SRCS-$(ARCH_ARM)  += common/arm/loopfilter_arm.c
