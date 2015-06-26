@@ -330,6 +330,16 @@ case $arch in
     require $(filter $REQUIRES)
     x86
     ;;
+  mipsel)	#loongson3A
+    ALL_ARCHS=$(filter mips3 simd)
+    REQUIRES=${REQUIRES:-simd}
+    mips        #call mips() functon
+    ;;
+  mips3)		#loongson3A CROSS COMPILE
+    ALL_ARCHS=$(filter mips3 simd)
+    REQUIRES=${REQUIRES:-simd}
+    mips        #call mips() functon
+    ;;
   mips32)
     ALL_ARCHS=$(filter mips32)
     dspr2=$([ -f "$config_file" ] && eval echo $(grep HAVE_DSPR2 "$config_file"))
