@@ -3,7 +3,6 @@ cat <<EOF
 /*
  * VP8
  */
-hello
 struct blockd;
 struct macroblockd;
 struct loop_filter_info;
