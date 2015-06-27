@@ -44,7 +44,7 @@ vp8_dequant_idct_add_y_block_dspr2=vp8_dequant_idct_add_y_block_dspr2
 prototype void vp8_dequant_idct_add_uv_block "short *q, short *dq, unsigned char *dst_u, unsigned char *dst_v, int stride, char *eobs"
 specialize vp8_dequant_idct_add_uv_block mmx sse2 media neon dspr2 simd
 vp8_dequant_idct_add_uv_block_media=vp8_dequant_idct_add_uv_block_v6
-vp8_dequant_idct_add_y_block_dspr2=vp8_dequant_idct_add_y_block_dspr2
+vp8_dequant_idct_add_uv_block_dspr2=vp8_dequant_idct_add_uv_block_dspr2
 
 #
 # Loopfilter
