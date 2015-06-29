@@ -136,7 +136,6 @@ VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/iwalsh_simd.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/loopfilter_mips.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/loopfilter_simd.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/postproc_simd.c
-VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/reconinter_simd.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/recon_simd.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/sad_simd.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/subpixel_simd.c
