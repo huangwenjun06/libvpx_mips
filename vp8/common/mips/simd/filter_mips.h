@@ -11,7 +11,9 @@
 #ifndef FILTER_MIPS_H
 #define FILTER_MIPS_H
 
-/* x86 assembly specific copy of vp8/common/filter.c:vp8_bilinear_filters with
+//X86 Directory: filter_x86.c
+//Common Directory: NULL ; because never user vp8_bilinear_fiter_mips_* Array
+/* MIPS assembly specific copy of vp8/common/filter.c:vp8_bilinear_filters with
  * duplicated values */
 extern const short vp8_bilinear_filters_MIPS_4[8][8];  /* duplicated 4x */
 extern const short vp8_bilinear_filters_MIPS_8[8][16]; /* duplicated 8x */

@@ -10,6 +10,8 @@
 
 #include "vpx_ports/mem.h"
 
+//X86 Directory: filter_x86.c
+//Common Directory: NULL ; because never user vp8_bilinear_fiter_mips_* Array
 DECLARE_ALIGNED(16, const short, vp8_bilinear_filters_mips_4[8][8]) =
 {
     { 128, 128, 128, 128,   0,   0,   0,   0 },
