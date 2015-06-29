@@ -13,11 +13,17 @@
 #include "vp8_rtcd.h"
 #include "vpx_mem/vpx_mem.h"
 
+//x86 Directory:	x86/dequantize_mmx.asm
+//common Directory: 	dequantize.c
+/*
+ ** vp8_dequant_idct_add_simd
+ ** vp8_dequantize_b_impl_mmx : function not implement ; it Doesn't matter; it just called by vp8_dequantize_b_mmx in idct_blk_mmx.c
+ * */
 #if HAVE_SIMD
 void vp8_dequant_idct_add_simd(short *input, short *dq,
                                 unsigned char *dest, int stride)
 {
-	printf("message from mips simd\n");
+    printf("message from mips simd\n");
     int i;
 
     for (i = 0; i < 16; i++)
