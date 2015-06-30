@@ -23,7 +23,7 @@
 void vp8_dequant_idct_add_simd(short *input, short *dq,
                                 unsigned char *dest, int stride)
 {
-    printf("message from mips simd\n");
+//    printf("message from mips simd\n");
     int i;
 
     for (i = 0; i < 16; i++)
