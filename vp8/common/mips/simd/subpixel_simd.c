@@ -62,25 +62,6 @@ void vp8_bilinear_predict4x4_simd
 
     HFilter = vp8_bilinear_filters[xoffset];
     VFilter = vp8_bilinear_filters[yoffset];
-#if 0
-    {
-        int i;
-        unsigned char temp1[16];
-        unsigned char temp2[16];
-
-        bilinear_predict4x4_mmx(src_ptr, src_pixels_per_line, xoffset, yoffset, temp1, 4);
-        filter_block2d_bil(src_ptr, temp2, src_pixels_per_line, 4, HFilter, VFilter, 4, 4);
-
-        for (i = 0; i < 16; i++)
-        {
-            if (temp1[i] != temp2[i])
-            {
-                bilinear_predict4x4_mmx(src_ptr, src_pixels_per_line, xoffset, yoffset, temp1, 4);
-                filter_block2d_bil(src_ptr, temp2, src_pixels_per_line, 4, HFilter, VFilter, 4, 4);
-            }
-        }
-    }
-#endif
     filter_block2d_bil(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 4, 4);
 
 }

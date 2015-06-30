@@ -79,10 +79,10 @@ void vp8_dequant_idct_add_uv_block_simd
         for (j = 0; j < 2; j++)
         {
             if (*eobs++ > 1)
-                vp8_dequant_idct_add_c (q, dq, dstu, stride);
+                vp8_dequant_idct_add_simd (q, dq, dstu, stride);
             else
             {
-                vp8_dc_only_idct_add_c (q[0]*dq[0], dstu, stride, dstu, stride);
+                vp8_dc_only_idct_add_simd (q[0]*dq[0], dstu, stride, dstu, stride);
                 ((int *)q)[0] = 0;
             }
 
@@ -98,10 +98,10 @@ void vp8_dequant_idct_add_uv_block_simd
         for (j = 0; j < 2; j++)
         {
             if (*eobs++ > 1)
-                vp8_dequant_idct_add_c (q, dq, dstv, stride);
+                vp8_dequant_idct_add_simd (q, dq, dstv, stride);
             else
             {
-                vp8_dc_only_idct_add_c (q[0]*dq[0], dstv, stride, dstv, stride);
+                vp8_dc_only_idct_add_simd (q[0]*dq[0], dstv, stride, dstv, stride);
                 ((int *)q)[0] = 0;
             }
 
