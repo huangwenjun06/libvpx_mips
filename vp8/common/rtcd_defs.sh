@@ -21,9 +21,10 @@ forward_decls vp8_common_forward_decls
 # system state
 #
 prototype void vp8_clear_system_state ""
-specialize vp8_clear_system_state mmx simd
+specialize vp8_clear_system_state mmx
+#specialize vp8_clear_system_state mmx simd
 vp8_clear_system_state_mmx=vpx_reset_mmx_state
-vp8_clear_system_state_simd=vpx_reset_simd_state
+#vp8_clear_system_state_simd=vpx_reset_simd_state
 
 #
 # Dequant
@@ -482,27 +483,33 @@ specialize vp8_quantize_mbuv neon
 # Block subtraction
 #
 prototype int vp8_block_error "short *coeff, short *dqcoeff"
-specialize vp8_block_error mmx sse2 simd
+#specialize vp8_block_error mmx sse2 simd
+specialize vp8_block_error mmx sse2
 vp8_block_error_sse2=vp8_block_error_xmm
 
 prototype int vp8_mbblock_error "struct macroblock *mb, int dc"
-specialize vp8_mbblock_error mmx sse2 simd
+#specialize vp8_mbblock_error mmx sse2 simd
+specialize vp8_mbblock_error mmx sse2
 vp8_mbblock_error_sse2=vp8_mbblock_error_xmm
 
 prototype int vp8_mbuverror "struct macroblock *mb"
-specialize vp8_mbuverror mmx sse2 simd
+#specialize vp8_mbuverror mmx sse2 simd
+specialize vp8_mbuverror mmx sse2
 vp8_mbuverror_sse2=vp8_mbuverror_xmm
 
 prototype void vp8_subtract_b "struct block *be, struct blockd *bd, int pitch"
-specialize vp8_subtract_b mmx sse2 media neon simd
+#specialize vp8_subtract_b mmx sse2 media neon simd
+specialize vp8_subtract_b mmx sse2 media neon
 vp8_subtract_b_media=vp8_subtract_b_armv6
 
 prototype void vp8_subtract_mby "short *diff, unsigned char *src, int src_stride, unsigned char *pred, int pred_stride"
-specialize vp8_subtract_mby mmx sse2 media neon simd
+#specialize vp8_subtract_mby mmx sse2 media neon simd
+specialize vp8_subtract_mby mmx sse2 media neon
 vp8_subtract_mby_media=vp8_subtract_mby_armv6
 
 prototype void vp8_subtract_mbuv "short *diff, unsigned char *usrc, unsigned char *vsrc, int src_stride, unsigned char *upred, unsigned char *vpred, int pred_stride"
-specialize vp8_subtract_mbuv mmx sse2 media neon simd
+#specialize vp8_subtract_mbuv mmx sse2 media neon simd
+specialize vp8_subtract_mbuv mmx sse2 media neon
 vp8_subtract_mbuv_media=vp8_subtract_mbuv_armv6
 
 #

@@ -10,8 +10,8 @@
 
 
 #include <stdlib.h>
-#include "loopfilter.h"
-#include "onyxc_int.h"
+//#include "loopfilter.h"
+//#include "onyxc_int.h"
 
 typedef unsigned char uc;
 

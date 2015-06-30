@@ -10,8 +10,8 @@
 
 
 #include <stdlib.h>
-#include "loopfilter.h"
-#include "onyxc_int.h"
+#include "../../loopfilter.h"
+//#include "onyxc_int.h"
 #include "vp8_rtcd.h"
 
 typedef unsigned char uc;
@@ -98,7 +98,7 @@ void vp8_loop_filter_bv_simd(unsigned char *y_ptr, unsigned char *u_ptr,
 void vp8_loop_filter_bvs_simd(unsigned char *y_ptr, int y_stride,
                            const unsigned char *blimit)
 {
-    vp8_loop_filter_simple_vertical_edge_simdy_ptr + 4, y_stride, blimit);
+    vp8_loop_filter_simple_vertical_edge_simd(y_ptr + 4, y_stride, blimit);
     vp8_loop_filter_simple_vertical_edge_simd(y_ptr + 8, y_stride, blimit);
     vp8_loop_filter_simple_vertical_edge_simd(y_ptr + 12, y_stride, blimit);
 }

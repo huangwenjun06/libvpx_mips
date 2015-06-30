@@ -999,6 +999,10 @@ EOF
         link_with_cc=gcc
         setup_gnu_toolchain
         tune_cflags="-mtune="
+        if enabled simd; then
+            check_add_cflags -mips3
+            disable_feature fast_unaligned
+        fi
         if enabled dspr2; then
             check_add_cflags -mips32r2 -mdspr2
             disable_feature fast_unaligned
