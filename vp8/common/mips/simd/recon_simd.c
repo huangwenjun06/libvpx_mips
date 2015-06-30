@@ -14,109 +14,107 @@
 #include "vpx/vpx_integer.h"
 
 #if HAVE_SIMD
-inline void prefetch_load_int(unsigned char *src)
-{
-    __asm__ __volatile__ (
-	".set arch=mips32	\n\t"
-        "pref   0,  0(%[src])   \n\t"
-        :
-        : [src] "r" (src)
-    );
-}
 
-
-__inline void vp8_copy_mem16x16_simd(
-    unsigned char *RESTRICT src,
+void vp8_copy_mem16x16_simd(
+    unsigned char *src,
     int src_stride,
-    unsigned char *RESTRICT dst,
+    unsigned char *dst,
     int dst_stride)
 {
+
     int r;
-    unsigned int a0, a1, a2, a3;
 
-    for (r = 16; r--;)
+    for (r = 0; r < 16; r++)
     {
-        /* load src data in cache memory */
-        prefetch_load_int(src + src_stride);
+#if !(CONFIG_FAST_UNALIGNED)
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = src[3];
+        dst[4] = src[4];
+        dst[5] = src[5];
+        dst[6] = src[6];
+        dst[7] = src[7];
+        dst[8] = src[8];
+        dst[9] = src[9];
+        dst[10] = src[10];
+        dst[11] = src[11];
+        dst[12] = src[12];
+        dst[13] = src[13];
+        dst[14] = src[14];
+        dst[15] = src[15];
 
-        /* use unaligned memory load and store */
-        __asm__ __volatile__ (
-            "ulw    %[a0], 0(%[src])            \n\t"
-            "ulw    %[a1], 4(%[src])            \n\t"
-            "ulw    %[a2], 8(%[src])            \n\t"
-            "ulw    %[a3], 12(%[src])           \n\t"
-            "sw     %[a0], 0(%[dst])            \n\t"
-            "sw     %[a1], 4(%[dst])            \n\t"
-            "sw     %[a2], 8(%[dst])            \n\t"
-            "sw     %[a3], 12(%[dst])           \n\t"
-            : [a0] "=&r" (a0), [a1] "=&r" (a1),
-              [a2] "=&r" (a2), [a3] "=&r" (a3)
-            : [src] "r" (src), [dst] "r" (dst)
-        );
+#else
+        ((uint32_t *)dst)[0] = ((uint32_t *)src)[0] ;
+        ((uint32_t *)dst)[1] = ((uint32_t *)src)[1] ;
+        ((uint32_t *)dst)[2] = ((uint32_t *)src)[2] ;
+        ((uint32_t *)dst)[3] = ((uint32_t *)src)[3] ;
 
+#endif
         src += src_stride;
         dst += dst_stride;
+
     }
 }
 
-
-__inline void vp8_copy_mem8x8_simd(
-    unsigned char *RESTRICT src,
+void vp8_copy_mem8x8_simd(
+    unsigned char *src,
     int src_stride,
-    unsigned char *RESTRICT dst,
+    unsigned char *dst,
     int dst_stride)
 {
     int r;
-    unsigned int a0, a1;
 
-    /* load src data in cache memory */
-    prefetch_load_int(src + src_stride);
-
-    for (r = 8; r--;)
+    for (r = 0; r < 8; r++)
     {
-        /* use unaligned memory load and store */
-        __asm__ __volatile__ (
-            "ulw    %[a0], 0(%[src])            \n\t"
-            "ulw    %[a1], 4(%[src])            \n\t"
-            "sw     %[a0], 0(%[dst])            \n\t"
-            "sw     %[a1], 4(%[dst])            \n\t"
-            : [a0] "=&r" (a0), [a1] "=&r" (a1)
-            : [src] "r" (src), [dst] "r" (dst)
-        );
-
+#if !(CONFIG_FAST_UNALIGNED)
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = src[3];
+        dst[4] = src[4];
+        dst[5] = src[5];
+        dst[6] = src[6];
+        dst[7] = src[7];
+#else
+        ((uint32_t *)dst)[0] = ((uint32_t *)src)[0] ;
+        ((uint32_t *)dst)[1] = ((uint32_t *)src)[1] ;
+#endif
         src += src_stride;
         dst += dst_stride;
+
     }
+
 }
 
-
-__inline void vp8_copy_mem8x4_simd(
-    unsigned char *RESTRICT src,
+void vp8_copy_mem8x4_simd(
+    unsigned char *src,
     int src_stride,
-    unsigned char *RESTRICT dst,
+    unsigned char *dst,
     int dst_stride)
 {
     int r;
-    unsigned int a0, a1;
 
-    /* load src data in cache memory */
-    prefetch_load_int(src + src_stride);
-
-    for (r = 4; r--;)
+    for (r = 0; r < 4; r++)
     {
-        /* use unaligned memory load and store */
-        __asm__ __volatile__ (
-            "ulw    %[a0], 0(%[src])            \n\t"
-            "ulw    %[a1], 4(%[src])            \n\t"
-            "sw     %[a0], 0(%[dst])            \n\t"
-            "sw     %[a1], 4(%[dst])            \n\t"
-           : [a0] "=&r" (a0), [a1] "=&r" (a1)
-           : [src] "r" (src), [dst] "r" (dst)
-        );
-
+#if !(CONFIG_FAST_UNALIGNED)
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = src[3];
+        dst[4] = src[4];
+        dst[5] = src[5];
+        dst[6] = src[6];
+        dst[7] = src[7];
+#else
+        ((uint32_t *)dst)[0] = ((uint32_t *)src)[0] ;
+        ((uint32_t *)dst)[1] = ((uint32_t *)src)[1] ;
+#endif
         src += src_stride;
         dst += dst_stride;
+
     }
+
 }
 
 #endif
