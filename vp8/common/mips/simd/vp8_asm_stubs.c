@@ -13,6 +13,8 @@
 #include "vp8_rtcd.h"
 #include "vpx_ports/mem.h"
 
+#define VP8_FILTER_WEIGHT 128
+extern const short vp8_sub_pel_filters[8][6];
 #if HAVE_SIMD
 
 static void filter_block2d_first_pass
