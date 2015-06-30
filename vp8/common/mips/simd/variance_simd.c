@@ -35,6 +35,21 @@ static void variance(
     }
 }
 
+unsigned int vp8_mse16x16_simd(
+    const unsigned char *src_ptr,
+    int  source_stride,
+    const unsigned char *ref_ptr,
+    int  recon_stride,
+    unsigned int *sse)
+{
+    unsigned int var;
+    int avg;
+
+    variance(src_ptr, source_stride, ref_ptr, recon_stride, 16, 16, &var, &avg);
+    *sse = var;
+    return var;
+}
+
 unsigned int vp8_variance16x16_simd(
     const unsigned char *src_ptr,
     int  source_stride,
