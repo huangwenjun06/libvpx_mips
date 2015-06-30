@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include "vpx_config.h"
+#include "vp8_rtcd.h"
+#include "../../filter.h"
 /*
  *x86 Directory: x86/subpixel_mmx.asm
  *common Directory: filter.c
@@ -73,7 +77,7 @@ void vp8_bilinear_predict4x4_simd
  *      vp8_bilinear_predict16x16_simd
  *
  */
-vp8_bilinear_predict16x16_simd
+void vp8_bilinear_predict16x16_simd
 (
     unsigned char  *src_ptr,
     int   src_pixels_per_line,

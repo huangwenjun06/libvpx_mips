@@ -332,7 +332,12 @@ case $arch in
     ;;
   mipsel)	#loongson3A
     ALL_ARCHS=$(filter mips3 simd)
-    REQUIRES=${REQUIRES:-simd}
+    simd=$([ -f "$config_file" ] && eval echo $(grep HAVE_SIMD "$config_file"))
+    HAVE_SIMD="${simd#*=}"
+    if [ "$HAVE_SIMD" = "yes" ]; then
+        ALL_ARCHS=$(filter mips3 simd)
+    fi
+    #REQUIRES=${REQUIRES:-simd}
     mips        #call mips() functon
     ;;
   mips3)		#loongson3A CROSS COMPILE

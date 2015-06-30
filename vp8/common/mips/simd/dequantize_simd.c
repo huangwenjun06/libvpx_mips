@@ -12,7 +12,7 @@
 #include "vpx_config.h"
 #include "vp8_rtcd.h"
 #include "vpx_mem/vpx_mem.h"
-
+#include <stdio.h>
 //x86 Directory:	x86/dequantize_mmx.asm
 //common Directory: 	dequantize.c
 /*

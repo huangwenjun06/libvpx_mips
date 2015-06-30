@@ -10,7 +10,7 @@
 
 #include "vpx_config.h"
 #include "vp8_rtcd.h"
-
+#include "../../blockd.h"
 void vp8_dequant_idct_add_simd(short *input, short *dq,
                             unsigned char *dest, int stride);//dequantize_simd.c
 void vp8_dc_only_idct_add_simd(short input_dc, unsigned char * pred,
