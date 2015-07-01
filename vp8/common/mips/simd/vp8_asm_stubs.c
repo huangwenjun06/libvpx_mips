@@ -13,7 +13,8 @@
 #include "vp8_rtcd.h"
 #include "vpx_ports/mem.h"
 
-#define VP8_FILTER_WEIGHT 128
+#include "filter_mips.h"
+
 extern const short vp8_sub_pel_filters[8][6];
 #if HAVE_SIMD
 
@@ -99,7 +100,6 @@ static void filter_block2d_second_pass
 
             output_ptr[j] = (unsigned char)Temp;
             src_ptr++;
-
         }
 
         /* Start next row */
@@ -108,6 +108,13 @@ static void filter_block2d_second_pass
     }
 }
 
+//X86 Directory: vp8_asm_stubs.c
+//Common Directory:filter.c
+/*function vp8_sixtap_predict4x4_simd
+ *	   vp8_sixtap_predict8x8_simd
+ *	   vp8_sixtap_predict8x4_simd
+ *	   vp8_sixtap_predict16x16_simd
+ * */
 
 static void filter_block2d
 (
@@ -147,32 +154,6 @@ void vp8_sixtap_predict4x4_simd
     filter_block2d(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter);
 }
 
-void vp8_sixtap_predict16x16_simd
-(
-    unsigned char  *src_ptr,
-    int   src_pixels_per_line,
-    int  xoffset,
-    int  yoffset,
-    unsigned char *dst_ptr,
-    int dst_pitch
-)
-{
-    const short  *HFilter;
-    const short  *VFilter;
-    int FData[21*24];   /* Temp data buffer used in filtering */
-
-
-    HFilter = vp8_sub_pel_filters[xoffset];   /* 6 tap */
-    VFilter = vp8_sub_pel_filters[yoffset];   /* 6 tap */
-
-    /* First filter 1-D horizontally... */
-    filter_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 21, 16, HFilter);
-
-    /* then filter verticaly... */
-    filter_block2d_second_pass(FData + 32, dst_ptr, dst_pitch, 16, 16, 16, 16, VFilter);
-
-}
-
 void vp8_sixtap_predict8x8_simd
 (
     unsigned char  *src_ptr,
@@ -199,8 +180,6 @@ void vp8_sixtap_predict8x8_simd
 
 }
 
-
-
 void vp8_sixtap_predict8x4_simd
 (
     unsigned char  *src_ptr,
@@ -224,6 +203,32 @@ void vp8_sixtap_predict8x4_simd
 
     /* then filter verticaly... */
     filter_block2d_second_pass(FData + 16, dst_ptr, dst_pitch, 8, 8, 4, 8, VFilter);
+
+}
+
+void vp8_sixtap_predict16x16_simd
+(
+    unsigned char  *src_ptr,
+    int  src_pixels_per_line,
+    int  xoffset,
+    int  yoffset,
+    unsigned char *dst_ptr,
+    int  dst_pitch
+)
+{
+    const short  *HFilter;
+    const short  *VFilter;
+    int FData[21*24];   /* Temp data buffer used in filtering */
+
+
+    HFilter = vp8_sub_pel_filters[xoffset];   /* 6 tap */
+    VFilter = vp8_sub_pel_filters[yoffset];   /* 6 tap */
+
+    /* First filter 1-D horizontally... */
+    filter_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 21, 16, HFilter);
+
+    /* then filter verticaly... */
+    filter_block2d_second_pass(FData + 32, dst_ptr, dst_pitch, 16, 16, 16, 16, VFilter);
 
 }
 
