@@ -129,6 +129,7 @@ VP8_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/dequantize_dspr2.c
 #hwj date:2015-06-26
 # common (c)
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/dequantize_simd.c
+VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/filter_mips.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/idct_blk_simd.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/idctllm_simd.c
 VP8_COMMON_SRCS-$(HAVE_SIMD)  += common/mips/simd/iwalsh_simd.c

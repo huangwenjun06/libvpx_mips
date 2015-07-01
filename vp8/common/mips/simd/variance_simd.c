@@ -1,6 +1,8 @@
 #include "vpx_config.h"
 #include "vp8_rtcd.h"
 #include "../../filter.h"
+#include "filter_mips.h"
+
 /* x86 Directory: x86/variance_mmx.c
  * common Directiry: variance_c.c
  *
@@ -9,26 +11,26 @@
  *
  * */
 //declare var_filter_block2d_bil_first_pass and var_filter_block2d_bil_second_pass 
-static void var_filter_block2d_bil_first_pass
-(
-    const unsigned char *src_ptr,
-    unsigned short *output_ptr,
-    unsigned int src_pixels_per_line,
-    int pixel_step,
-    unsigned int output_height,
-    unsigned int output_width,
-    const short *vp8_filter
-);
-static void var_filter_block2d_bil_second_pass
-(
-    const unsigned short *src_ptr,
-    unsigned char  *output_ptr,
-    unsigned int  src_pixels_per_line,
-    unsigned int  pixel_step,
-    unsigned int  output_height,
-    unsigned int  output_width,
-    const short *vp8_filter
-);
+//static void var_filter_block2d_bil_first_pass
+//(
+//    const unsigned char *src_ptr,
+//    unsigned short *output_ptr,
+//    unsigned int src_pixels_per_line,
+//    int pixel_step,
+//    unsigned int output_height,
+//    unsigned int output_width,
+//    const short *vp8_filter
+//);
+//static void var_filter_block2d_bil_second_pass
+//(
+//    const unsigned short *src_ptr,
+//    unsigned char  *output_ptr,
+//    unsigned int  src_pixels_per_line,
+//    unsigned int  pixel_step,
+//    unsigned int  output_height,
+//    unsigned int  output_width,
+//    const short *vp8_filter
+//);
 
 static void variance(
     const unsigned char *src_ptr,
@@ -245,124 +247,6 @@ unsigned int vp8_sub_pixel_mse16x16_simd
 {
     vp8_sub_pixel_variance16x16_simd(src_ptr, src_pixels_per_line, xoffset, yoffset, dst_ptr, dst_pixels_per_line, sse);
     return *sse;
-}
-
-/****************************************************************************
- *
- *  ROUTINE       : filter_block2d_bil_first_pass
- *
- *  INPUTS        : UINT8  *src_ptr          : Pointer to source block.
- *                  UINT32 src_pixels_per_line : Stride of input block.
- *                  UINT32 pixel_step        : Offset between filter input samples (see notes).
- *                  UINT32 output_height     : Input block height.
- *                  UINT32 output_width      : Input block width.
- *                  INT32  *vp8_filter          : Array of 2 bi-linear filter taps.
- *
- *  OUTPUTS       : INT32 *output_ptr        : Pointer to filtered block.
- *
- *  RETURNS       : void
- *
- *  FUNCTION      : Applies a 1-D 2-tap bi-linear filter to the source block in
- *                  either horizontal or vertical direction to produce the
- *                  filtered output block. Used to implement first-pass
- *                  of 2-D separable filter.
- *
- *  SPECIAL NOTES : Produces INT32 output to retain precision for next pass.
- *                  Two filter taps should sum to VP8_FILTER_WEIGHT.
- *                  pixel_step defines whether the filter is applied
- *                  horizontally (pixel_step=1) or vertically (pixel_step=stride).
- *                  It defines the offset required to move from one input
- *                  to the next.
- *
- ****************************************************************************/
-static void var_filter_block2d_bil_first_pass
-(
-    const unsigned char *src_ptr,
-    unsigned short *output_ptr,
-    unsigned int src_pixels_per_line,
-    int pixel_step,
-    unsigned int output_height,
-    unsigned int output_width,
-    const short *vp8_filter
-)
-{
-    unsigned int i, j;
-
-    for (i = 0; i < output_height; i++)
-    {
-        for (j = 0; j < output_width; j++)
-        {
-            /* Apply bilinear filter */
-            output_ptr[j] = (((int)src_ptr[0]          * vp8_filter[0]) +
-                             ((int)src_ptr[pixel_step] * vp8_filter[1]) +
-                             (VP8_FILTER_WEIGHT / 2)) >> VP8_FILTER_SHIFT;
-            src_ptr++;
-        }
-
-        /* Next row... */
-        src_ptr    += src_pixels_per_line - output_width;
-        output_ptr += output_width;
-    }
-}
-
-/****************************************************************************
- *
- *  ROUTINE       : filter_block2d_bil_second_pass
- *
- *  INPUTS        : INT32  *src_ptr          : Pointer to source block.
- *                  UINT32 src_pixels_per_line : Stride of input block.
- *                  UINT32 pixel_step        : Offset between filter input samples (see notes).
- *                  UINT32 output_height     : Input block height.
- *                  UINT32 output_width      : Input block width.
- *                  INT32  *vp8_filter          : Array of 2 bi-linear filter taps.
- *
- *  OUTPUTS       : UINT16 *output_ptr       : Pointer to filtered block.
- *
- *  RETURNS       : void
- *
- *  FUNCTION      : Applies a 1-D 2-tap bi-linear filter to the source block in
- *                  either horizontal or vertical direction to produce the
- *                  filtered output block. Used to implement second-pass
- *                  of 2-D separable filter.
- *
- *  SPECIAL NOTES : Requires 32-bit input as produced by filter_block2d_bil_first_pass.
- *                  Two filter taps should sum to VP8_FILTER_WEIGHT.
- *                  pixel_step defines whether the filter is applied
- *                  horizontally (pixel_step=1) or vertically (pixel_step=stride).
- *                  It defines the offset required to move from one input
- *                  to the next.
- *
- ****************************************************************************/
-static void var_filter_block2d_bil_second_pass
-(
-    const unsigned short *src_ptr,
-    unsigned char  *output_ptr,
-    unsigned int  src_pixels_per_line,
-    unsigned int  pixel_step,
-    unsigned int  output_height,
-    unsigned int  output_width,
-    const short *vp8_filter
-)
-{
-    unsigned int  i, j;
-    int  Temp;
-
-    for (i = 0; i < output_height; i++)
-    {
-        for (j = 0; j < output_width; j++)
-        {
-            /* Apply filter */
-            Temp = ((int)src_ptr[0]          * vp8_filter[0]) +
-                   ((int)src_ptr[pixel_step] * vp8_filter[1]) +
-                   (VP8_FILTER_WEIGHT / 2);
-            output_ptr[j] = (unsigned int)(Temp >> VP8_FILTER_SHIFT);
-            src_ptr++;
-        }
-
-        /* Next row... */
-        src_ptr    += src_pixels_per_line - output_width;
-        output_ptr += output_width;
-    }
 }
 
 unsigned int vp8_sub_pixel_variance16x8_simd
