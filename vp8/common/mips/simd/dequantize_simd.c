@@ -23,14 +23,42 @@
 void vp8_dequant_idct_add_simd(short *input, short *dq,
                                 unsigned char *dest, int stride)
 {
+    __asm__ volatile( 
+	".set push \n\t"
+	".set noreorder	\n\t"
+	".set arch=loongson2f	\n\t"
+	//"break 01	\n\t"
+	"ldc1 $f0,0(%1) \n\t"   //load 64 bit data to f0
+        "ldc1 $f2,0(%2) \n\t"   //load 64 bit data to f2
+        "nop            \n\t"
+        "pmullh $f0, $f0, $f2   \n\t"   //four 16bit data signed mul, get low
+        "sdc1 $f0,0(%0) \n\t"   //store 64 bit data from f0 to memory
+        "ldc1 $f0,8(%1) \n\t"   //second:load 64 bit data to f0
+        "ldc1 $f2,8(%2) \n\t"   //load 64 bit data to f2
+        "nop            \n\t"
+        "pmullh $f0, $f0, $f2   \n\t"   //four 16bit data signed mul, get low
+        "sdc1 $f0,8(%0) \n\t"   //store 64 bit data from f0 to memory
+        "ldc1 $f0,16(%1) \n\t"   //third:load 64 bit data to f0
+        "ldc1 $f2,16(%2) \n\t"   //load 64 bit data to f2
+        "nop            \n\t"
+        "pmullh $f0, $f0, $f2   \n\t"   //four 16bit data signed mul, get low
+        "sdc1 $f0,16(%0) \n\t"   //store 64 bit data from f0 to memory
+        "ldc1 $f0,24(%1)        \n\t"   //forth:load 64 bit data to f0
+        "ldc1 $f2,24(%2)        \n\t"   //load 64 bit data to f2
+        "nop            \n\t"
+        "pmullh $f0, $f0, $f2   \n\t"   //four 16bit data signed mul, get low
+        "sdc1 $f0,24(%0)        \n\t"   //store 64 bit data from f0 to memory
+        : "=r"(input)
+        : "0"(input),"r"(dq)
+        : "$f0", "$f2","memory"
+    );
     //printf("message from mips simd\n");
-    int i;
-
-    for (i = 0; i < 16; i++)
-    {
-        input[i] = dq[i] * input[i];
-    }
-
+    
+//    int i;
+//    for (i = 0; i < 16; i++)
+//    {
+//        input[i] = dq[i] * input[i];
+//    }
     vp8_short_idct4x4llm_simd(input, dest, stride, dest, stride);
 
     vpx_memset(input, 0, 32);
