@@ -1,3 +1,7 @@
+const short vp8_bilinear_filters_mips_4[8][8];
+
+const short vp8_bilinear_filters_mips_8[8][16];
+
 
 #define VP8_FILTER_SHIFT  7
 #define VP8_FILTER_WEIGHT 128

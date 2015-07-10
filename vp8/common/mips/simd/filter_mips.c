@@ -3,6 +3,31 @@
 #include "../../filter.h"
 #include "filter_mips.h"
 
+
+const short vp8_bilinear_filters_mips_4[8][8] =
+{
+    { 128, 128, 128, 128,   0,   0,   0,   0 },
+    { 112, 112, 112, 112,  16,  16,  16,  16 },
+    {  96,  96,  96,  96,  32,  32,  32,  32 },
+    {  80,  80,  80,  80,  48,  48,  48,  48 },
+    {  64,  64,  64,  64,  64,  64,  64,  64 },
+    {  48,  48,  48,  48,  80,  80,  80,  80 },
+    {  32,  32,  32,  32,  96,  96,  96,  96 },
+    {  16,  16,  16,  16, 112, 112, 112, 112 }
+};
+
+const short vp8_bilinear_filters_mips_8[8][16] =
+{
+    { 128, 128, 128, 128, 128, 128, 128, 128,   0,   0,   0,   0,   0,   0,   0,   0 },
+    { 112, 112, 112, 112, 112, 112, 112, 112,  16,  16,  16,  16,  16,  16,  16,  16 },
+    {  96,  96,  96,  96,  96,  96,  96,  96,  32,  32,  32,  32,  32,  32,  32,  32 },
+    {  80,  80,  80,  80,  80,  80,  80,  80,  48,  48,  48,  48,  48,  48,  48,  48 },
+    {  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64 },
+    {  48,  48,  48,  48,  48,  48,  48,  48,  80,  80,  80,  80,  80,  80,  80,  80 },
+    {  32,  32,  32,  32,  32,  32,  32,  32,  96,  96,  96,  96,  96,  96,  96,  96 },
+    {  16,  16,  16,  16,  16,  16,  16,  16, 112, 112, 112, 112, 112, 112, 112, 112 }
+};
+
 /* x86 Directory: x86/variance_mmx.c
  * common Directiry: filter.c
  *
@@ -53,20 +78,28 @@ static void filter_block2d_bil_first_pass
 )
 {
     unsigned int i, j;
+    short vp8_filter_head=vp8_filter[0];
+    short vp8_filter_second=vp8_filter[1];
+    short filter_weight=VP8_FILTER_WEIGHT/2;//	64=128/2=VP8_FILTER_WEIGHT/2
+    int width_src= src_stride-width;  // width_src=src_stride - width;
 
     for (i = 0; i < height; i++)
     {
         for (j = 0; j < width; j++)
         {
             /* Apply bilinear filter */
-            dst_ptr[j] = (((int)src_ptr[0] * vp8_filter[0]) +
-                          ((int)src_ptr[1] * vp8_filter[1]) +
-                          (VP8_FILTER_WEIGHT / 2)) >> VP8_FILTER_SHIFT;
+            dst_ptr[j] = (((int)src_ptr[0] * vp8_filter_head) +
+                          ((int)src_ptr[1] * vp8_filter_second) +
+                          filter_weight) >> VP8_FILTER_SHIFT;	//>>7
+//            dst_ptr[j] = (((int)src_ptr[0] * vp8_filter[0]) +
+//                          ((int)src_ptr[1] * vp8_filter[1]) +
+//                          (VP8_FILTER_WEIGHT / 2)) >> VP8_FILTER_SHIFT;	//>>7
             src_ptr++;
         }
 
         /* Next row... */
-        src_ptr += src_stride - width;
+//        src_ptr += src_stride - width;
+        src_ptr += width_src;
         dst_ptr += width;
     }
 }
@@ -164,7 +197,7 @@ void filter_block2d_bil
     unsigned short FData[17*16];    /* Temp data buffer used in filtering */
 
     /* First filter 1-D horizontally... */
-    filter_block2d_bil_first_pass(src_ptr, FData, src_pitch, Height + 1, Width, HFilter);
+    filter_block2d_bil_first_pass(src_ptr, FData, src_pitch, Height + 1, Width, HFilter);//(8+1,8),(8+1,4),(4+1,4)
 
     /* then 1-D vertically... */
     filter_block2d_bil_second_pass(FData, dst_ptr, dst_pitch, Height, Width, VFilter);
@@ -212,6 +245,9 @@ void var_filter_block2d_bil_first_pass
 {
     unsigned int i, j;
 
+    short vp8_filter_head = vp8_filter[0];
+    short vp8_filter_second = vp8_filter[1];
+	
     for (i = 0; i < output_height; i++)
     {
         for (j = 0; j < output_width; j++)
