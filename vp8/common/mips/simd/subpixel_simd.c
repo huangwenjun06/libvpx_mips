@@ -3,6 +3,221 @@
 #include "vp8_rtcd.h"
 #include "filter_mips.h"
 #include "../../filter.h"
+
+unsigned short rd[] = {
+//unsigned char rd[] = {
+	0x0040,0x0040,0x0040,0x0040
+};
+
+//begin
+void vp8_filter_block1d_h6_simd
+(
+    unsigned char   *src_ptr,
+    unsigned short  *output_ptr,
+    unsigned int    src_pixels_per_line,
+    unsigned int    pixel_step,
+    unsigned int    output_height,
+    unsigned int    output_width,
+    short           * vp8_filter
+)
+{
+    __asm__ volatile(
+        ".set push \n\t"
+        ".set noreorder \n\t"
+        ".set arch=loongson3a    \n\t"
+					//vp8_filter rdx
+	//"break 0x05	\n\t"
+	"ldc1 $f2, 0x10(%[rdx])	 \n\t"
+	"ldc1 $f4, 0x20(%[rdx])	 \n\t"
+	"ldc1 $f12, 0x30(%[rdx]) \n\t"
+	"ldc1 $f14, 0x40(%[rdx]) \n\t"
+
+					//output_ptr rdi
+					//src_ptr rsi
+					//output_height rcx
+					//output_width rax
+	"psubh $f0, $f0, $f0	\n\t"	//pxor mm0,mm0
+	
+     ".nextrow: \n\t"
+	//"ldc1 $f6, -2(%[rsi])	\n\t"	//movq mm3, [rsi-2]
+	"gsldlc1 $f6,-2+0x7(%[rsi]) \n\t"
+	"gsldrc1 $f6,-2(%[rsi]) \n\t"
+
+	"dli $t1, 0x08	\n\t"
+	"mov.d $f8, $f6	\n\t"		//movq mm4, mm3
+	"dmtc1 $t1, $f18 \n\t"
+	"dsrl $f6, $f6, $f18 \n\t"	//psrlq mm3, 8
+	"punpcklbh $f6, $f6, $f0 \n\t"	//punpcklbw mm3, mm0
+	"pmullh $f6, $f6, $f2 \n\t"	//pmullw mm3,mm1
+
+	"mov.d $f10, $f8 \n\t"		//movq mm5, mm4
+	"punpckhbh $f8, $f8, $f0 \n\t"	//punpckhbw mm4, mm0
+	"pmullh $f8, $f8, $f14 \n\t"	//pmullw mm4, mm7
+	"paddsh $f6, $f6, $f8 \n\t"	//paddsw mm3, mm4
+
+	"mov.d $f8, $f10 \n\t"		//movq mm4, mm5
+	"dli $t1, 0x10	\n\t"
+	"dmtc1 $t1, $f18 \n\t"
+	"dsrl $f10, $f10, $f18 \n\t"	//psrlq mm5, 16
+	"punpcklbh $f10, $f10, $f0 \n\t"//punpcklbw mm5, mm0
+	"pmullh $f10, $f10, $f4 \n\t"	//pmullw mm5,mm2
+	"paddsh $f6, $f6, $f10 \n\t"	//paddsw mm3, mm5
+
+	
+	"mov.d $f10, $f8 \n\t"		//movq mm5, mm4
+	"dli $t1, 0x18	\n\t"
+	"dmtc1 $t1, $f18 \n\t"
+	"dsrl $f8, $f8, $f18 \n\t"	//psrlq mm4, 24
+	"punpcklbh $f8, $f8, $f0 \n\t"  //punpcklbw mm8, mm0
+	"pmullh $f8, $f8, $f12 \n\t"	//pmullw mm4,mm6
+	"paddsh $f6, $f6, $f8 \n\t"	//paddsw mm3, mm4
+	
+        // do outer positive taps
+        "gslwlc1 $f8 ,6(%[rsi])	\n\t"	//movd mm4,[rsi+3]
+        "gslwrc1 $f8 ,3(%[rsi])	\n\t"	//movd mm4,[rsi+3]
+        //"lwc1 $f8 ,3(%[rsi])	\n\t"	//movd mm4,[rsi+3]	//aligned	//need debug
+        "ldc1 $f16 ,0x50(%[rdx]) \n\t"	//$f16 temp
+	"punpcklbh $f8, $f8, $f0 \n\t"  //punpcklbw mm8, mm0
+	"pmullh $f8, $f8, $f16 \n\t"	//pmullw mm4, [rdx+80]
+	"paddsh $f6, $f6, $f8 \n\t"	//paddsw mm3, mm4
+	
+        "ldc1 $f16 ,0(%[rdx]) \n\t"	//$f16 temp
+	"punpcklbh $f10, $f10, $f0 \n\t"//punpcklbw mm5, mm0
+	"pmullh $f10, $f10, $f16 \n\t"	//pmullw mm5, [rdx]
+	"paddsh $f6, $f6, $f10	\n\t"	//paddsw mm3, mm5
+
+	"ldc1 $f16, 0(%[rd])	\n\t"
+	"nop	\n\t"
+	"paddsh $f6, $f6, $f16	\n\t"	//paddsw mm3, [GLOBAL(rd)]
+
+	"li $t2, 0x07		\n\t"
+	"dmtc1 $t2, $f16	\n\t"
+	"psrah $f6, $f6, $f16	\n\t"	//psraw mm3, VP8_FILTER_SHIFT
+	"packushb $f6, $f6, $f0	\n\t"	//packuswb mm3, mm0
+	"punpcklbh $f6, $f6, $f0\n\t"	//punpcklbw mm3, mm0
+	
+	"sdc1 $f6, 0(%[rdi]) \n\t"	//movq [rdi], mm3
+
+	//ABI_IS_32BIT
+	"add %[rsi], %[rsi], %[rdx_line] \n\t"	//add rsi, dword ptr arg[2]
+	"add %[rdi], %[rdi], %[rax]	\n\t"	//add rdi, rax
+
+	"addiu %[rcx],%[rcx], -1	\n\t"	//dec rcx
+	"bnez %[rcx], .nextrow	\n\t"		//jnz .nextrow
+	"nop	\n\t"
+        :
+        :[rdi]"r"(output_ptr),[rsi]"r"(src_ptr),[rdx_line]"r"(src_pixels_per_line),[rcx]"r"(output_height),[rax]"r"(output_width),[rdx]"r"(vp8_filter),[rd]"r"(rd)
+        : "$f0", "$f2","$f4", "$f6", "$f8","$f10", "$f12", "$f14", "$f16", "$f18","$9", "$10","memory"	//t1, t2
+	);
+}
+
+void vp8_filter_block1dc_v6_simd
+(
+   short *src_ptr,
+   unsigned char *output_ptr,
+   int output_pitch,
+   unsigned int src_pixels_per_line,
+   unsigned int pixel_step,
+   unsigned int output_height,
+   unsigned int output_width,
+   short * vp8_filter
+)
+{
+    __asm__ volatile(
+        ".set push \n\t"
+        ".set noreorder \n\t"
+        ".set arch=loongson3a   \n\t"
+	//"break 0x02	\n\t"
+	"ldc1 $f10, 0(%[rd])	\n\t"	//movq mm5, [GLOBAL(rd)]
+
+					//rbx vp8_filter rbx
+	"ldc1 $f2, 0x10(%[rbx])	\n\t"	//movq mm1, [rbx + 16]
+	"ldc1 $f4, 0x20(%[rbx])	\n\t"	//movq mm2, [rbx + 32]
+	"ldc1 $f12, 0x30(%[rbx])	\n\t"	//movq mm6, [rbx + 48]
+	"ldc1 $f14, 0x40(%[rbx])	\n\t"	//movq mm7, [rbx + 64]
+	"nop	\n\t"
+	
+					//rdx src_pixels_per_line
+					//rdi output_ptr
+					//rsi src_ptr
+	//"break 0x01	\n\t"
+	"subu %[rsi], %[rsi], %[rdx]	\n\t"	//sub rsi,rdx
+	"subu %[rsi], %[rsi], %[rdx]	\n\t"	//sub rsi,rdx
+					//rcx output_height
+					//rax output_pitch
+	
+	"psubh $f0, $f0, $f0	\n\t"	//pxor mm0 mm0
+
+   ".nextrow_cv: \n\t"
+	"add $t2, %[rsi], %[rdx]	\n\t"	//rsi+rdx
+	"ldc1 $f6, 0($t2)	\n\t"	//movq mm3, [rsi+rdx]
+	"nop	\n\t"
+	"pmullh $f6, $f6, $f2	\n\t"	//pmullw mm3, mm1
+	
+	//"dli $t2, 4 \n\t"	
+	"li $t2, 4 \n\t"	
+	"mul $t2, %[rdx], $t2	\n\t"	//4*rdx
+	"add $t2, %[rsi], $t2	\n\t"	//rsi + 4*rdx
+	"ldc1 $f8, 0($t2)	\n\t"	//movq mm4, [rsi + 4*rdx]
+	"nop	\n\t"
+	"pmullh $f8, $f8, $f14	\n\t"	//pmullw mm4, mm7
+	"paddsh $f6, $f6, $f8	\n\t"	//paddsw mm3, mm4
+
+	"li $t2, 2 \n\t"	
+	//"dli $t2, 2 \n\t"	
+	"mul $t2, %[rdx], $t2	\n\t"	//2*rdx
+	"add $t2, %[rsi], $t2	\n\t"	//rsi + 4*rdx
+	"ldc1 $f8, 0($t2)	\n\t"	//movq mm4, [rsi + 4*rdx]
+	"nop	\n\t"
+	"pmullh $f8, $f8, $f4	\n\t"	//pmullw mm4, mm2
+	"paddsh $f6, $f6, $f8	\n\t"	//paddsw mm3, mm4
+	
+	"ldc1 $f8, 0(%[rsi])	\n\t"	//movq mm4, [rsi]
+	"ldc1 $f16, 0(%[rbx])	\n\t"	//[rbx]
+	"nop	\n\t"
+	"pmullh $f8, $f8, $f16	\n\t"	//pmullw mm4, [rbx]
+	"paddsh $f6, $f6, $f8	\n\t"	//paddsw mm3, mm4
+	
+	"add %[rsi], %[rsi], %[rdx]	\n\t"	//add rsi, rdx
+	//"dli $t2, 2 \n\t"	
+	"li $t2, 2 \n\t"	
+	"mul $t2, %[rdx], $t2	\n\t"	//2*rdx
+	"add $t2, %[rsi], $t2	\n\t"	//rsi + 4*rdx
+	"ldc1 $f8, 0($t2)	\n\t"	//movq mm4, [rsi + 4*rdx]
+	"nop	\n\t"
+	"pmullh $f8, $f8, $f12	\n\t"	//pmullw mm4, mm6
+	"paddsh $f6, $f6, $f8	\n\t"	//paddsw mm3, mm4
+	
+	//"dli $t2, 4 \n\t"	
+	"li $t2, 4 \n\t"	
+	"mul $t2, %[rdx], $t2	\n\t"	//4*rdx
+	"add $t2, %[rsi], $t2	\n\t"	//rsi + 4*rdx
+	"ldc1 $f8, 0($t2)	\n\t"	//movq mm4, [rsi + 4*rdx]
+	"ldc1 $16, 80(%[rbx])	\n\t"	//[rbx+80]
+	"nop	\n\t"
+	"pmullh $f8, $f8, $f16	\n\t"	//pmullw mm4, mm7
+	"paddsh $f6, $f6, $f8	\n\t"	//paddsw mm3, mm4
+
+	"paddsh $f6, $f6, $f10	\n\t"	//paddsw mm3, mm5
+	"li $t2, 0x07	\n\t"
+	"dmtc1 $t2,$f16	\n\t"
+	"psrah $f6, $f6, $f16	\n\t"	//psraw mm3, VP8_FILTER_SHIFT
+	"packushb $f6, $f6, $f0	\n\t"	//packuswb mm3, mm0
+	
+	"sdc1 $f6, 0(%[rdi])	\n\t"	//movd [rdi], mm3
+
+	"add %[rdi], %[rdi], %[rax]	\n\t"	//lea rdi, [rdi+rax]
+	"addiu %[rcx],%[rcx], -1	\n\t"	//dec rcx
+	"bnez %[rcx], .nextrow_cv	\n\t"		//jnz .nextrow_cv
+	"nop	\n\t"
+        :
+        :[rdi]"r"(output_ptr),[rsi]"r"(src_ptr),[rax]"r"(output_pitch),[rdx]"r"(src_pixels_per_line),[rcx]"r"(output_height),[rbx]"r"(vp8_filter),[rd]"r"(rd)
+        : "$f0", "$f2","$f4", "$f6", "$f8","$f10", "$f12", "$f14", "$f16", "$9", "$10","memory"	//t1, t2
+	);
+}
+
+//end
+
 /*
  *x86 Directory: x86/subpixel_mmx.asm
  *common Directory: filter.c
@@ -12,10 +227,10 @@
  * 	vp8_bilinear_predict4x4_simd
  *
  */
-unsigned short rd[] = {
-//unsigned char rd[] = {
-	0x0040,0x0040,0x0040,0x0040
-};
+//unsigned short rd[] = {
+////unsigned char rd[] = {
+//	0x0040,0x0040,0x0040,0x0040
+//};
 
 void vp8_bilinear_predict8x8_simd
 (

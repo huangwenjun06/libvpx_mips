@@ -5,6 +5,31 @@ const short vp8_bilinear_filters_mips_8[8][16];
 
 #define VP8_FILTER_SHIFT  7
 #define VP8_FILTER_WEIGHT 128
+
+
+void vp8_filter_block1d_h6_simd
+(
+    unsigned char   *src_ptr,
+    unsigned short  *output_ptr,
+    unsigned int    src_pixels_per_line,
+    unsigned int    pixel_step,
+    unsigned int    output_height,
+    unsigned int    output_width,
+    short           * vp8_filter
+);
+
+void vp8_filter_block1dc_v6_simd
+(
+   short *src_ptr,
+   unsigned char *output_ptr,
+   int output_pitch,
+   unsigned int src_pixels_per_line,
+   unsigned int pixel_step,
+   unsigned int output_height,
+   unsigned int output_width,
+   short * vp8_filter
+);
+
 //static void filter_block2d_bil
 void filter_block2d_bil
 (

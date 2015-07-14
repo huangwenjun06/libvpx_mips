@@ -16,6 +16,57 @@
 #include "filter_mips.h"
 
 extern const short vp8_sub_pel_filters[8][6];
+
+short vp8_six_tap_simd[8][6*8]={
+      { 0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,
+	128,128,128,128,128,128,128,128,
+	0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0 },
+      {	0,0,0,0,0,0,0,0,
+	-6,-6,-6,-6,-6,-6,-6,-6,
+	123,123,123,123,123,123,123,123,
+	12,12,12,12,12,12,12,12,
+	-1,-1,-1,-1,-1,-1,-1,-1,
+	0,0,0,0,0,0,0,0 },
+      { 2,2,2,2,2,2,2,2,
+	-11,-11,-11,-11,-11,-11,-11,-11,
+	108,108,108,108,108,108,108,108,
+	36,36,36,36,36,36,36,36,
+	-8,-8,-8,-8,-8,-8,-8,-8,
+	1,1,1,1,1,1,1,1 },
+      { 0,0,0,0,0,0,0,0,
+	-9,-9,-9,-9,-9,-9,-9,-9,
+	93,93,93,93,93,93,93,93,
+	50,50,50,50,50,50,50,50,
+	-6,-6,-6,-6,-6,-6,-6,-6,
+	0,0,0,0,0,0,0,0 },
+      {	3,3,3,3,3,3,3,3,
+	-16,-16,-16,-16,-16,-16,-16,-16,
+	77,77,77,77,77,77,77,77,
+	77,77,77,77,77,77,77,77,
+	-16,-16,-16,-16,-16,-16,-16,-16,
+	3,3,3,3,3,3,3,3 },
+      {	0,0,0,0,0,0,0,0,
+	-6,-6,-6,-6,-6,-6,-6,-6,
+	50,50,50,50,50,50,50,50,
+	93,93,93,93,93,93,93,93,
+	-9,-9,-9,-9,-9,-9,-9,-9,
+	0,0,0,0,0,0,0,0 },
+      {	1,1,1,1,1,1,1,1,
+	-8,-8,-8,-8,-8,-8,-8,-8,
+	36,36,36,36,36,36,36,36,
+	108,108,108,108,108,108,108,108,
+	-11,-11,-11,-11,-11,-11,-11,-11,
+	2,2,2,2,2,2,2,2 },
+      {	0,0,0,0,0,0,0,0,
+	-1,-1,-1,-1,-1,-1,-1,-1,
+	12,12,12,12,12,12,12,12,
+	123,123,123,123,123,123,123,123,
+	-6,-6,-6,-6,-6,-6,-6,-6,
+	0,0,0,0,0,0,0,0 }
+};
 #if HAVE_SIMD
 
 static void filter_block2d_first_pass
@@ -216,20 +267,40 @@ void vp8_sixtap_predict16x16_simd
     int  dst_pitch
 )
 {
-    const short  *HFilter;
-    const short  *VFilter;
-    int FData[21*24];   /* Temp data buffer used in filtering */
+    
+    //const short  *HFilter;
+    //const short  *VFilter;
+    short  *HFilter;
+    short  *VFilter;
+    //int FData[21*24];   /* Temp data buffer used in filtering */
+    //short FData[21*24];   /* Temp data buffer used in filtering */
 
 
-    HFilter = vp8_sub_pel_filters[xoffset];   /* 6 tap */
-    VFilter = vp8_sub_pel_filters[yoffset];   /* 6 tap */
+    //HFilter = vp8_sub_pel_filters[xoffset];   /* 6 tap */
+    //VFilter = vp8_sub_pel_filters[yoffset];   /* 6 tap */
 
-    /* First filter 1-D horizontally... */
-    filter_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 21, 16, HFilter);
+    ///* First filter 1-D horizontally... */
+    //filter_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 21, 16, HFilter);
 
-    /* then filter verticaly... */
-    filter_block2d_second_pass(FData + 32, dst_ptr, dst_pitch, 16, 16, 16, 16, VFilter);
+    ///* then filter verticaly... */
+    //filter_block2d_second_pass(FData + 32, dst_ptr, dst_pitch, 16, 16, 16, 16, VFilter);
 
+    //unsigned short FData2[24*24];   /* Temp data buffer used in filtering */
+DECLARE_ALIGNED_ARRAY(16, unsigned short, FData2, 24*24);  /* Temp data bufffer used in filtering */
+    HFilter = vp8_six_tap_simd[xoffset];
+    //two function 
+    //vp8_filter_block1d_h6_simd	//subpixel_simd.c
+    //vp8_filter_block1dc_v6_simd
+    vp8_filter_block1d_h6_simd(src_ptr - (2 * src_pixels_per_line),    FData2,   src_pixels_per_line, 1, 21, 32, HFilter);
+    vp8_filter_block1d_h6_simd(src_ptr - (2 * src_pixels_per_line) + 4,  FData2 + 4, src_pixels_per_line, 1, 21, 32, HFilter);
+    vp8_filter_block1d_h6_simd(src_ptr - (2 * src_pixels_per_line) + 8,  FData2 + 8, src_pixels_per_line, 1, 21, 32, HFilter);
+    vp8_filter_block1d_h6_simd(src_ptr - (2 * src_pixels_per_line) + 12, FData2 + 12, src_pixels_per_line, 1, 21, 32, HFilter);
+
+    VFilter = vp8_six_tap_simd[yoffset];
+    vp8_filter_block1dc_v6_simd(FData2 + 32, dst_ptr,   dst_pitch, 32, 16, 16, 16, VFilter);
+    vp8_filter_block1dc_v6_simd(FData2 + 36, dst_ptr + 4, dst_pitch, 32, 16, 16, 16, VFilter);
+    vp8_filter_block1dc_v6_simd(FData2 + 40, dst_ptr + 8, dst_pitch, 32, 16, 16, 16, VFilter);
+    vp8_filter_block1dc_v6_simd(FData2 + 44, dst_ptr + 12, dst_pitch, 32, 16, 16, 16, VFilter);
 }
 
 #endif
