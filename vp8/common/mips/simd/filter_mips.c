@@ -326,3 +326,210 @@ void var_filter_block2d_bil_second_pass
     }
 }
 
+short mmx_bi_rd[4] = { 64, 64, 64, 64};
+//#define mmx_filter_shift 7
+
+//x86:vp8/common/x86/variance_impl_mmx.asm
+void vp8_filter_block2d_bil_var_simd
+(
+    const unsigned char *ref_ptr,
+    int ref_pixels_per_line,
+    const unsigned char *src_ptr,
+    int src_pixels_per_line,
+    unsigned int Height,
+    const short *HFilter,
+    const short *VFilter,
+    //unsigned short *HFilter,
+    //unsigned short *VFilter,
+    int *sum,
+    unsigned int *sumsquared
+)
+{
+    __asm__ volatile(
+        ".set push \n\t"
+        ".set noreorder \n\t"
+        ".set arch=loongson3a    \n\t"
+	"psubh $f12, $f12, $f12	\n\t"	//pxor mm6, mm6
+	"psubh $f14, $f14, $f14	\n\t"	//pxor mm7, mm7
+					//rax : HFilter
+
+					//rdx : VFilter
+					//rsi : ref_ptr
+
+					//rdi : src_ptr
+					//rcx : Height
+
+	"psubh $f0, $f0, $f0	\n\t"	//pxor mm0, mm0
+	"ldc1 $f2, 0(%[rsi])	\n\t"	//movq mm1, [rsi]
+	"nop		\n\t"
+	
+	"gsldlc1 $f6, 0x1+0x7(%[rsi]) \n\t"	//movq mm3, [rsi+1]
+	"gsldlc1 $f6, 0x1(%[rsi])	\n\t"
+	"mov.d $f4, $f2		\n\t"	//movq mm3, mm1
+	
+	"mov.d $f8, $f6		\n\t"	//movq mm4, mm3
+	"punpcklbh $f2, $f2, $f0	\n\t"	//punpcklbw mm1, mm0
+	
+	"punpckhbh $f4, $f4, $f0	\n\t"	//punpckhbw mm2, mm0
+	"ldc1 $f16, 0(%[rax])	\n\t"	//pmullw mm1, [rax]
+	"nop	\n\t"
+	"pmullh $f2, $f2, $f16	\n\t"
+
+	"pmullh $f4, $f4, $f16	\n\t"	//pmullw mm2, [rax]
+	"punpcklbh $f6, $f6, $f0 \n\t"	//punpcklbw mm3, mm0
+
+	"punpckhbh $f4, $f4, $f0	\n\t"	//punpckhbw mm4, mm0
+	"ldc1 $f16, 0x8(%[rax])	\n\t"	//pmullw mm3, [rax+8]
+	"nop	\n\t"
+	"pmullh $f6, $f6, $f16	\n\t"	
+
+	"pmullh $f8, $f8, $f16	\n\t"	//pmullw mm4, [rax+8]
+	"paddh $f2, $f2, $f6	\n\t"	//paddw mm1, mm3
+
+	"paddh $f4, $f4, $f8	\n\t"	//paddw mm2, mm4
+	"ldc1 $f16, 0(%[bi_rd])	\n\t"	//GLOBAL(mmx_bi_rd)
+	"nop	\n\t"
+	"paddh $f2, $f2, $f16	\n\t"	//paddw mm1, [GLOBAL(mmx_bi_rd)]
+	
+	"li $t2, 0x7	\n\t"
+	"dmtc1 $t2, $f18	\n\t"
+	"psrah $f2, $f2, $f18	\n\t"	//psraw mm1, 7
+	"paddh $f4, $f4, $f16	\n\t"	//paddw mm2, [GLOBAL(mmx_bi_rd)]
+
+	"psrah $f4, $f4, $f18	\n\t"	//psraw mm2, 7
+	"mov.d $f10, $f2	\n\t"	//movq mm5, mm1
+
+	"packushb $f10, $f10, $f4 \n\t"	//packuswb mm5,mm2
+	
+	//ABI_IS_32BIT
+	"add %[rsi], %[rsi], %[rsi_pixels] \n\t" //add rsi, ref_pixels_per_line
+
+".filter_block2d_bil_var_mmx_loop: \n\t"
+	"ldc1 $f2, 0(%[rsi])	\n\t"	//movq mm1, [rsi]
+	"nop		\n\t"
+	"gsldlc1 $f6, 1+0x7(%[rsi]) \n\t" //movq mm3, [rsi+1]
+	"gsldlc1 $f6, 1(%[rsi])	\n\t"
+	
+	"mov.d $f4, $f2	\n\t"	//movq mm2, mm1
+	"mov.d $f8, $f6	\n\t"	//movq mm4, mm3
+	
+	"punpcklbh $f2, $f2, $f0 \n\t"	//punpcklbw mm1, mm0
+	"punpckhbh $f4, $f4, $f0 \n\t"	//punpckhbw mm2, mm0
+	
+	"ldc1 $f16, 0(%[rax]) \n\t"
+	"nop	\n\t"
+	"pmullh $f2, $f2, $f16	\n\t"	//pmullw mm1, [rax]
+	"pmullh $f4, $f4, $f16	\n\t"	//pmullw mm2, [rax]
+
+	"punpcklbh $f6, $f6, $f0 \n\t"	//punpcklbw mm3, mm0
+	"punpckhbh $f8, $f8, $f0 \n\t"	//punpckhbw mm4, mm0
+
+	"ldc1 $f16, 0x8(%[rax]) \n\t"
+	"nop	\n\t"
+	"pmullh $f6, $f6, $f16	\n\t"	//pmullw mm3, [rax+8]
+	"pmullh $f8, $f8, $f16	\n\t"	//pmullw mm4, [rax+8]
+
+	"paddh $f2, $f2, $f6	\n\t"	//paddw mm1, mm3
+	"paddh $f4, $f4, $f8	\n\t"	//paddw mm2, mm4
+
+	"ldc1 $f18, 0(%[bi_rd])	\n\t"	//GLOBAL(mmx_bi_rd)
+	"nop	\n\t"
+	"paddh $f2, $f2, $f18	\n\t"	//paddw mm1, [GLOBAL(mmx_bi_rd)]
+	"li $t2, 0x7	\n\t"
+	"dmtc1 $t2, $f16	\n\t"
+	"psrah $f2, $f2, $f16	\n\t"	//psraw mm1, 7
+	
+	"paddh $f4, $f4, $f18	\n\t"	//paddw mm2, [GLOBAL(mmx_bi_rd)]
+	"psrah $f4, $f4, $f16	\n\t"	//psraw mm2, 7
+	
+	"mov.d $f6, $f10	\n\t"	//movq mm3, mm5
+	"mov.d $f8, $f10	\n\t"	//movq mm4, mm5
+	
+	"punpcklbh $f6, $f6, $f0 \n\t"	//punpcklbw mm3, mm0
+	"punpckhbh $f8, $f8, $f0 \n\t"	//punpckhbw mm4, mm0
+
+	"mov.d $f10, $f2	\n\t"	//movq mm5, mm1
+	"packushb $f10, $f10, $f4 \n\t"	//packuswb mm5, mm2
+	
+	"ldc1 $f16, 0(%[rdx]) \n\t"
+	"nop	\n\t"
+	"pmullh $f6, $f6, $f16	\n\t"	//pmullw mm3, [rdx]
+	"pmullh $f8, $f8, $f16	\n\t"	//pmullw mm4, [rdx]
+
+	"ldc1 $f16, 8(%[rdx]) \n\t"
+	"nop	\n\t"
+	"pmullh $f2, $f2, $f16	\n\t"	//pmullw mm1, [rdx]
+	"pmullh $f4, $f4, $f16	\n\t"	//pmullw mm2, [rdx]
+	
+	"paddh $f2, $f2, $f6	\n\t"	//paddw mm1, mm3
+	"paddh $f4, $f4, $f8	\n\t"	//paddw mm2, mm4
+		
+	"paddh $f2, $f2, $f18	\n\t"	//paddw mm1, [GLOBAL(mmx_bi_rd)]
+	"paddh $f4, $f4, $f18	\n\t"	//paddw mm2, [GLOBAL(mmx_bi_rd)]
+	
+	"li $t2, 0x7	\n\t"
+	"dmtc1 $t2, $f16	\n\t"
+	"psrah $f2, $f2, $f16	\n\t"	//psraw mm1, 7
+	"psrah $f4, $f4, $f16	\n\t"	//psraw mm2, 7
+
+	"ldc1 $f6, 0(%[rdi]) \n\t"	//movq mm3, [rdi]
+	"nop	\n\t"
+	"mov.d $f8, $f6	\n\t"		//movq mm4, mm3
+	
+	"punpcklbh $f6, $f6, $f0 \n\t"	//punpcklbw mm3, mm0
+	"punpckhbh $f8, $f8, $f0 \n\t"	//punpckhbw mm4, mm0
+	
+	"psubh $f2, $f2, $f6 \n\t"	//psubw mm1, mm3
+	"psubh $f4, $f4, $f8 \n\t"	//psubw mm2, mm4
+	
+	"paddh $f12, $f12, $f2	\n\t"	//paddw mm6, mm1
+	"pmaddhw $f2, $f2, $f2	\n\t"	//pmaddwd mm1, mm1 //check
+	
+	"paddh $f12, $f12, $f4	\n\t"	//paddw mm6, mm2
+	"pmaddhw $f4, $f4, $f4	\n\t"	//pmaddwd mm2, mm2
+
+	"paddw $f14, $f14, $f2	\n\t"	//paddd mm7, mm1
+	"paddw $f14, $f14, $f4	\n\t"	//paddd mm7, mm2
+
+	//ABI_IS_32BIT
+	"add %[rsi], %[rsi], %[rsi_pixels] \n\t" //add rsi, ref_pixels_per_line
+	"add %[rdi], %[rdi], %[rdi_pixels] \n\t" //add rdi, src_pixels_per_line
+	
+	"addiu %[rcx], %[rcx], -1	\n\t"	//sub rcx, 1
+	"bnez %[rcx], .filter_block2d_bil_var_mmx_loop \n\t"	//jnz
+
+	"psubh $f6, $f6, $f6	\n\t"	//pxor mm3, mm3
+	"psubh $f4, $f4, $f4	\n\t"	//pxor mm2, mm2
+	
+	//check
+	"punpcklhw $f4, $f4, $f12	\n\t"	//punpcklwd mm2, mm6
+	"punpckhhw $f6, $f6, $f12	\n\t"	//punpckhwd mm3, mm6
+	
+	"paddw $f4, $f4, $f6	\n\t"	//paddd mm2, mm3
+	"mov.d $f12, $f4	\n\t"	//movq mm6, mm2
+
+	"dli $t1,0x20	\n\t"	//32
+	"dmtc1 $t1, $f18	\n\t"
+	"dsrl $f12, $f12, $f18	\n\t"	//psrlq mm6,32
+	"paddw $f4, $f4, $f12	\n\t"	//paddd mm2, mm6
+
+	"dli $t1,0x10	\n\t"	//16
+	"dmtc1 $t1, $f16	\n\t"
+	"psraw $f12, $f12, $f16	\n\t"	//psrad mm6,16
+	"mov.d $f8, $f14	\n\t"	//movq mm4, mm7
+
+	"dsrl $f8, $f8, $f18	\n\t"	//psrlq mm4,32
+	"paddw $f8, $f8, $f14	\n\t"	//paddd mm4, mm7
+
+	"swc1 $f4, 0(%[rdi_sum])	\n\t"	//mov rdi, arg(7), movd [rdi], mm2
+	"swc1 $f8, 0(%[rsi_sumsquared])	\n\t"	//mov rsi arg(8), movd [rsi], mm4
+	//"sdc1 $f4, 0(%[rdi_sum])	\n\t"	//mov rdi, arg(7), movd [rdi], mm2
+	//"sdc1 $f8, 0(%[rsi_sumsquared])	\n\t"	//mov rsi arg(8), movd [rsi], mm4
+        :
+        :[rax]"r"(HFilter),[rdx]"r"(VFilter),[rsi]"r"(ref_ptr),[rdi]"r"(src_ptr),[rcx]"r"(Height),[rsi_pixels]"r"(ref_pixels_per_line),[rdi_pixels]"r"(src_pixels_per_line),[rdi_sum]"r"(sum),[rsi_sumsquared]"r"(sumsquared),[bi_rd]"r"(mmx_bi_rd)
+        : "$f0", "$f2","$f4", "$f6", "$f8","$f10", "$f12", "$f14", "$f16", "$f18","$9", "$10","memory"	//t1, t2
+	);
+
+}
+
+

@@ -66,3 +66,18 @@ void var_filter_block2d_bil_second_pass
     const short *vp8_filter
 );
 
+void vp8_filter_block2d_bil_var_simd
+(
+    const unsigned char *ref_ptr,
+    int ref_pixels_per_line,
+    const unsigned char *src_ptr,
+    int src_pixels_per_line,
+    unsigned int Height,
+    const short *HFilter,	//const short
+    const short *VFilter,
+    //const unsigned short *HFilter,	//const short
+    //const unsigned short *VFilter,
+    int *sum,
+    unsigned int *sumsquared
+);
+

@@ -136,6 +136,7 @@ unsigned int vp8_variance4x4_simd(
     return (var - (((unsigned int)avg * avg) >> 4));
 }
 
+//need todo
 unsigned int vp8_sub_pixel_variance4x4_simd
 (
     const unsigned char  *src_ptr,
@@ -147,6 +148,7 @@ unsigned int vp8_sub_pixel_variance4x4_simd
     unsigned int *sse
 )
 {
+
     unsigned char  temp2[20*16];
     const short *HFilter, *VFilter;
     unsigned short FData3[5*4]; /* Temp data bufffer used in filtering */
@@ -161,10 +163,20 @@ unsigned int vp8_sub_pixel_variance4x4_simd
     var_filter_block2d_bil_second_pass(FData3, temp2, 4,  4,  4,  4, VFilter);
 
     return vp8_variance4x4_simd(temp2, 4, dst_ptr, dst_pixels_per_line, sse);
+//    int xsum;
+//    unsigned int xxsum;
+//    vp8_filter_block2d_bil4x4_var_mmx(
+//        src_ptr, src_pixels_per_line,
+//        dst_ptr, dst_pixels_per_line,
+//        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],
+//        &xsum, &xxsum
+//    );
+//    *sse = xxsum;
+//    return (xxsum - (((unsigned int)xsum * xsum) >> 4));
 }
 
 
-unsigned int vp8_sub_pixel_variance8x8_simd
+unsigned int vp8_sub_pixel_variance8x8_mmx
 (
     const unsigned char  *src_ptr,
     int  src_pixels_per_line,
@@ -175,6 +187,18 @@ unsigned int vp8_sub_pixel_variance8x8_simd
     unsigned int *sse
 )
 {
+/*
+    int xsum;
+    unsigned int xxsum;
+    vp8_filter_block2d_bil_var_mmx(
+        src_ptr, src_pixels_per_line,
+        dst_ptr, dst_pixels_per_line, 8,
+        vp8_bilinear_filters_x86_4[xoffset], vp8_bilinear_filters_x86_4[yoffset],
+        &xsum, &xxsum
+    );
+    *sse = xxsum;
+    return (xxsum - (((unsigned int)xsum * xsum) >> 6));
+*/
     unsigned short FData3[9*8]; /* Temp data bufffer used in filtering */
     unsigned char  temp2[20*16];
     const short *HFilter, *VFilter;
@@ -186,6 +210,138 @@ unsigned int vp8_sub_pixel_variance8x8_simd
     var_filter_block2d_bil_second_pass(FData3, temp2, 8, 8, 8, 8, VFilter);
 
     return vp8_variance8x8_simd(temp2, 8, dst_ptr, dst_pixels_per_line, sse);
+
+}
+
+unsigned int vp8_sub_pixel_variance16x16_mmx
+(
+    const unsigned char  *src_ptr,
+    int  src_pixels_per_line,
+    int  xoffset,
+    int  yoffset,
+    const unsigned char *dst_ptr,
+    int dst_pixels_per_line,
+    unsigned int *sse
+)
+{
+    int xsum0, xsum1;
+    unsigned int xxsum0, xxsum1;
+
+
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr, src_pixels_per_line,
+        dst_ptr, dst_pixels_per_line, 16,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],
+        &xsum0, &xxsum0
+    );
+
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr + 8, src_pixels_per_line,
+        dst_ptr + 8, dst_pixels_per_line, 16,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],
+        &xsum1, &xxsum1
+    );
+
+    xsum0 += xsum1;
+    xxsum0 += xxsum1;
+
+    *sse = xxsum0;
+    return (xxsum0 - (((unsigned int)xsum0 * xsum0) >> 8));
+
+
+}
+
+unsigned int vp8_sub_pixel_mse16x16_mmx(
+    const unsigned char  *src_ptr,
+    int  src_pixels_per_line,
+    int  xoffset,
+    int  yoffset,
+    const unsigned char *dst_ptr,
+    int dst_pixels_per_line,
+    unsigned int *sse
+)
+{
+    vp8_sub_pixel_variance16x16_mmx(src_ptr, src_pixels_per_line, xoffset, yoffset, dst_ptr, dst_pixels_per_line, sse);
+    return *sse;
+}
+
+unsigned int vp8_sub_pixel_variance16x8_mmx
+(
+    const unsigned char  *src_ptr,
+    int  src_pixels_per_line,
+    int  xoffset,
+    int  yoffset,
+    const unsigned char *dst_ptr,
+    int dst_pixels_per_line,
+    unsigned int *sse
+)
+{
+    int xsum0, xsum1;
+    unsigned int xxsum0, xxsum1;
+
+
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr, src_pixels_per_line,
+        dst_ptr, dst_pixels_per_line, 8,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],
+        &xsum0, &xxsum0
+   );
+
+
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr + 8, src_pixels_per_line,
+        dst_ptr + 8, dst_pixels_per_line, 8,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],
+        &xsum1, &xxsum1
+    );
+
+    xsum0 += xsum1;
+    xxsum0 += xxsum1;
+
+    *sse = xxsum0;
+    return (xxsum0 - (((unsigned int)xsum0 * xsum0) >> 7));
+}
+
+
+//--gtest_filter=VP8/CQTest.LinearPSNRIsHigherForCQLevel/3
+unsigned int vp8_sub_pixel_variance8x8_simd
+(
+    const unsigned char  *src_ptr,
+    int  src_pixels_per_line,
+    int  xoffset,
+    int  yoffset,
+    const unsigned char *dst_ptr,
+    int dst_pixels_per_line,
+    unsigned int *sse
+)
+{
+
+    unsigned short FData3[9*8];
+
+ /* Temp data bufffer used in filtering */
+
+    unsigned char  temp2[20*16];
+    const short *HFilter, *VFilter;
+
+    HFilter = vp8_bilinear_filters[xoffset];
+    VFilter = vp8_bilinear_filters[yoffset];
+
+    var_filter_block2d_bil_first_pass(src_ptr, FData3, src_pixels_per_line, 1, 9, 8, HFilter);
+    var_filter_block2d_bil_second_pass(FData3, temp2, 8, 8, 8, 8, VFilter);
+
+    return vp8_variance8x8_simd(temp2, 8, dst_ptr, dst_pixels_per_line, sse);
+/*
+    int xsum;
+    unsigned int xxsum;
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr, src_pixels_per_line,
+        dst_ptr, dst_pixels_per_line, 8,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],	//8*8
+        &xsum, &xxsum
+    );
+    *sse = xxsum;
+    return (xxsum - (((unsigned int)xsum * xsum) >> 6));
+*/
 }
 
 unsigned int vp8_sub_pixel_variance16x16_simd
@@ -199,17 +355,31 @@ unsigned int vp8_sub_pixel_variance16x16_simd
     unsigned int *sse
 )
 {
-    unsigned short FData3[17*16];   /* Temp data bufffer used in filtering */
-    unsigned char  temp2[20*16];
-    const short *HFilter, *VFilter;
+    int xsum0, xsum1;
+    unsigned int xxsum0, xxsum1;
 
-    HFilter = vp8_bilinear_filters[xoffset];
-    VFilter = vp8_bilinear_filters[yoffset];
 
-    var_filter_block2d_bil_first_pass(src_ptr, FData3, src_pixels_per_line, 1, 17, 16, HFilter);
-    var_filter_block2d_bil_second_pass(FData3, temp2, 16, 16, 16, 16, VFilter);
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr, src_pixels_per_line,
+        dst_ptr, dst_pixels_per_line, 16,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],	//16*16
+        &xsum0, &xxsum0
+    );
 
-    return vp8_variance16x16_simd(temp2, 16, dst_ptr, dst_pixels_per_line, sse);
+
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr + 8, src_pixels_per_line,
+        dst_ptr + 8, dst_pixels_per_line, 16,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],
+        &xsum1, &xxsum1
+    );
+
+    xsum0 += xsum1;
+    xxsum0 += xxsum1;
+
+    *sse = xxsum0;
+    return (xxsum0 - (((unsigned int)xsum0 * xsum0) >> 8));
+
 }
 
 unsigned int vp8_sub_pixel_mse16x16_simd
@@ -238,18 +408,33 @@ unsigned int vp8_sub_pixel_variance16x8_simd
     unsigned int *sse
 )
 {
-    unsigned short FData3[16*9];    /* Temp data bufffer used in filtering */
-    unsigned char  temp2[20*16];
-    const short *HFilter, *VFilter;
+    int xsum0, xsum1;
+    unsigned int xxsum0, xxsum1;
 
-    HFilter = vp8_bilinear_filters[xoffset];
-    VFilter = vp8_bilinear_filters[yoffset];
 
-    var_filter_block2d_bil_first_pass(src_ptr, FData3, src_pixels_per_line, 1, 9, 16, HFilter);
-    var_filter_block2d_bil_second_pass(FData3, temp2, 16, 16, 8, 16, VFilter);
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr, src_pixels_per_line,
+        dst_ptr, dst_pixels_per_line, 8,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],	//16*8
+        &xsum0, &xxsum0
+    );
 
-    return vp8_variance16x8_simd(temp2, 16, dst_ptr, dst_pixels_per_line, sse);
+
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr + 8, src_pixels_per_line,
+        dst_ptr + 8, dst_pixels_per_line, 8,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],
+        &xsum1, &xxsum1
+    );
+
+    xsum0 += xsum1;
+    xxsum0 += xxsum1;
+
+    *sse = xxsum0;
+    return (xxsum0 - (((unsigned int)xsum0 * xsum0) >> 7));
 }
+
+//--gtest_filter=VP8/CQTest.LinearPSNRIsHigherForCQLevel/3
 unsigned int vp8_sub_pixel_variance8x16_simd
 (
     const unsigned char  *src_ptr,
@@ -261,7 +446,9 @@ unsigned int vp8_sub_pixel_variance8x16_simd
     unsigned int *sse
 )
 {
+
     unsigned short FData3[9*16];    /* Temp data bufffer used in filtering */
+
     unsigned char  temp2[20*16];
     const short *HFilter, *VFilter;
 
@@ -274,6 +461,19 @@ unsigned int vp8_sub_pixel_variance8x16_simd
     var_filter_block2d_bil_second_pass(FData3, temp2, 8, 8, 16, 8, VFilter);
 
     return vp8_variance8x16_simd(temp2, 8, dst_ptr, dst_pixels_per_line, sse);
+
+/*
+    int xsum;
+    unsigned int xxsum;
+    vp8_filter_block2d_bil_var_simd(
+        src_ptr, src_pixels_per_line,
+        dst_ptr, dst_pixels_per_line, 16,
+        vp8_bilinear_filters_mips_4[xoffset], vp8_bilinear_filters_mips_4[yoffset],	//8*16
+        &xsum, &xxsum
+    );
+    *sse = xxsum;
+    return (xxsum - (((unsigned int)xsum * xsum) >> 7));
+*/
 }
 
 unsigned int vp8_variance_halfpixvar16x16_h_simd(
