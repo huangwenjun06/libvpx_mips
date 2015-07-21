@@ -105,6 +105,8 @@ void vp8_filter_block1d_h6_simd
 	"addiu %[rcx],%[rcx], -1	\n\t"	//dec rcx
 	"bnez %[rcx], .nextrow	\n\t"		//jnz .nextrow
 	"nop	\n\t"
+        ".set pop       \n\t"
+        ".set reorder \n\t"
         :
         :[rdi]"r"(output_ptr),[rsi]"r"(src_ptr),[rdx_line]"r"(src_pixels_per_line),[rcx]"r"(output_height),[rax]"r"(output_width),[rdx]"r"(vp8_filter),[rd]"r"(rd)
         : "$f0", "$f2","$f4", "$f6", "$f8","$f10", "$f12", "$f14", "$f16", "$f18","$9", "$10","memory"	//t1, t2
@@ -210,6 +212,8 @@ void vp8_filter_block1dc_v6_simd
 	"addiu %[rcx],%[rcx], -1	\n\t"	//dec rcx
 	"bnez %[rcx], .nextrow_cv	\n\t"		//jnz .nextrow_cv
 	"nop	\n\t"
+        ".set pop       \n\t"
+        ".set reorder \n\t"
         :
         :[rdi]"r"(output_ptr),[rsi]"r"(src_ptr),[rax]"r"(output_pitch),[rdx]"r"(src_pixels_per_line),[rcx]"r"(output_height),[rbx]"r"(vp8_filter),[rd]"r"(rd)
         : "$f0", "$f2","$f4", "$f6", "$f8","$f10", "$f12", "$f14", "$f16", "$9", "$10","memory"	//t1, t2
@@ -423,8 +427,9 @@ void vp8_bilinear_predict8x4_simd
 	//empty	ToDo
 	"bne %[rdi], %[rcx], .next_row_84	\n\t"	//cmp rdi, rcx; jne .next_row_8*4
 	"nop	\n\t"
-	".set pop \n\t"
-        //: "=&r"(dst_ptr)
+        ".set pop       \n\t"
+        ".set reorder \n\t"
+	//: "=&r"(dst_ptr)
         //: "=r"(dst_ptr)
         :
         :[rdi]"r"(dst_ptr),[rsi]"r"(src_ptr),[rdx_line]"r"(src_pixels_per_line),[x_rax]"r"(xoffset),[y_rax]"r"(yoffset),[rdx_pitch]"r"(dst_pitch),[rcx]"r"(vp8_bilinear_filters_mips_8),[rd]"r"(rd)

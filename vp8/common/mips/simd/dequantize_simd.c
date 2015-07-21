@@ -48,6 +48,8 @@ void vp8_dequant_idct_add_simd(short *input, short *dq,
         "nop            \n\t"
         "pmullh $f0, $f0, $f2   \n\t"   //four 16bit data signed mul, get low
         "sdc1 $f0,24(%0)        \n\t"   //store 64 bit data from f0 to memory
+	".set reorder	\n\t"
+	".set pop	\n\t"
         : "=r"(input)
         : "0"(input),"r"(dq)
         : "$f0", "$f2","memory"

@@ -523,6 +523,8 @@ void vp8_filter_block2d_bil_var_simd
 
 	"swc1 $f4, 0(%[rdi_sum])	\n\t"	//mov rdi, arg(7), movd [rdi], mm2
 	"swc1 $f8, 0(%[rsi_sumsquared])	\n\t"	//mov rsi arg(8), movd [rsi], mm4
+	".set pop \n\t"
+	".set reorder \n\t"
 	//"sdc1 $f4, 0(%[rdi_sum])	\n\t"	//mov rdi, arg(7), movd [rdi], mm2
 	//"sdc1 $f8, 0(%[rsi_sumsquared])	\n\t"	//mov rsi arg(8), movd [rsi], mm4
         :
