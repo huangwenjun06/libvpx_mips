@@ -73,8 +73,8 @@ void vp8_filter_block1d_h6_simd
 	"paddsh $f6, $f6, $f8 \n\t"	//paddsw mm3, mm4
 	
         // do outer positive taps
-        "gslwlc1 $f8 ,6(%[rsi])	\n\t"	//movd mm4,[rsi+3]
-        "gslwrc1 $f8 ,3(%[rsi])	\n\t"	//movd mm4,[rsi+3]
+        "gsldlc1 $f8 ,10(%[rsi])	\n\t"	//movd mm4,[rsi+3]
+        "gsldrc1 $f8 ,3(%[rsi])	\n\t"	//movd mm4,[rsi+3]
         //"lwc1 $f8 ,3(%[rsi])	\n\t"	//movd mm4,[rsi+3]	//aligned	//need debug
         "ldc1 $f16 ,0x50(%[rdx]) \n\t"	//$f16 temp
 	"punpcklbh $f8, $f8, $f0 \n\t"  //punpcklbw mm8, mm0
